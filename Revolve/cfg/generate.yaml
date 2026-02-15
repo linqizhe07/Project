@@ -1,0 +1,60 @@
+# config file for reward generation from GPT*
+
+defaults:
+  - config
+  - _self_
+
+root_dir: ${oc.env:ROOT_PATH}
+
+database:
+  # folders
+  rewards_dir: ${root_dir}/database/${evolution.baseline}/${data_paths.run}  # store path for rewards database
+  # hyper params
+  num_islands: 4  # number of groups/populations to start with
+  max_island_size: 8  # max number of samples in each group
+#  reset_period: 8  # reset the lowest performing group after period (iterations)
+  crossover_prob: 0.5  # probability of preferring a crossover over mutation
+  migration_prob: 0.3  # probability of resetting weaker islands with seeds migrated from other islands
+  # sampling hyperparameters
+  initial_temp: 1  # start with a higher temperature for uniform sampling (exploration)
+  final_temp: 1  # exploitation
+  num_gpus: 1  # number of gpus to train policies on using parallel processing
+
+evolution:
+  num_generations: 7  # number of iterations T
+  baseline: revolve_auto  # revolve, revolve_auto, eureka, eureka_auto
+  individuals_per_generation: 15  # number of individuals in each generation
+
+few_shot:
+  mutation: 1  # few-shot prompting for mutation
+  crossover: 2  # few-shot prompting for crossover
+
+data_paths:
+  log: True  # log metrics and stats
+  run: 10
+  output_logs: ${root_dir}/logs/${evolution.baseline}/${data_paths.run}
+
+environment:
+  name: "HumanoidEnv"  # Choose between "HumanoidEnv" or "AdroitHandDoorEnv"
+
+u2o:
+  enabled: false  # set to true to use U2O pretraining
+  pretrained_dir: ${root_dir}/u2o_pretrained
+  # SFAgent config (scaled for Humanoid 376-dim obs)
+  z_dim: 100             # skill vector dimension
+  hidden_dim: 2048       # network hidden size
+  phi_hidden_dim: 1024   # feature network hidden size
+  feature_dim: 1024      # feature output dimension
+  feature_learner: hilp  # feature learning method (hilp, lap, contrastive, icm, etc.)
+  hilp_discount: 0.98    # HILP temporal discount
+  hilp_expectile: 0.5    # expectile for value learning
+  # Training
+  lr: 1e-4               # learning rate
+  batch_size: 2048       # batch size
+  finetune_steps: 50000  # fine-tuning steps per reward function
+  discount: 0.98         # MDP discount
+  sf_target_tau: 0.01    # soft update rate for target networks
+  # Replay buffer
+  future: 0.99           # future sampling discount
+  p_randomgoal: 0.375    # random goal sampling probability
+
